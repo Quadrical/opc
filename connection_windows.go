@@ -34,7 +34,7 @@ type AutomationObject struct {
 
 //CreateBrowser returns the OPCBrowser object from the OPCServer.
 //It only works if there is a successful connection.
-func (ao *AutomationObject) CreateBrowser() (*Tree, error) {
+func (ao *AutomationObject) CreateBrowser(rootNode string) (*Tree, error) {
 	// check if server is running, if not return error
 	if !ao.IsConnected() {
 		return nil, errors.New("Cannot create browser because we are not connected.")
@@ -48,6 +48,11 @@ func (ao *AutomationObject) CreateBrowser() (*Tree, error) {
 
 	// move to root
 	oleutil.MustCallMethod(browser.ToIDispatch(), "MoveToRoot")
+
+	// move to custom root
+	if rootNode != "" {
+		oleutil.MustCallMethod(browser.ToIDispatch(), "MoveDown", rootNode)
+	}
 
 	// create tree
 	root := Tree{"root", nil, []*Tree{}, []Leaf{}}
@@ -487,5 +492,16 @@ func CreateBrowser(server string, nodes []string) (*Tree, error) {
 	if err != nil {
 		return nil, err
 	}
-	return object.CreateBrowser()
+	return object.CreateBrowser("")
+}
+
+//CreateBrowserCustomRoot creates an opc browser representation shifting its root down
+func CreateBrowserCustomRoot(server string, nodes []string, rootNode string) (*Tree, error) {
+	object := NewAutomationObject()
+	defer object.Close()
+	_, err := object.TryConnect(server, nodes)
+	if err != nil {
+		return nil, err
+	}
+	return object.CreateBrowser(rootNode)
 }
