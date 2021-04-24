@@ -97,7 +97,7 @@ func buildTree(browser *ole.IDispatch, level int) {
 	oleutil.MustCallMethod(browser, "ShowBranches").ToIDispatch()
 	count = oleutil.MustGetProperty(browser, "Count").Value().(int32)
 
-	logger.Println("\tBranches count:", count)
+	//logger.Println("\tBranches count:", count)
 
 	for i := 1; i <= int(count); i++ {
 
