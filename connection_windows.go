@@ -89,7 +89,7 @@ func buildTree(browser *ole.IDispatch, level int) {
 		//l := Leaf{Name: item.(string), Tag: tag.(string)}
 
 		//logger.Println("\t", i, l)
-		fmt.Println(space, tag)
+		fmt.Println("[L]", space, tag)
 		//branch.Leaves = append(branch.Leaves, l)
 	}
 
@@ -102,7 +102,7 @@ func buildTree(browser *ole.IDispatch, level int) {
 	for i := 1; i <= int(count); i++ {
 
 		nextName := oleutil.MustCallMethod(browser, "Item", i).Value()
-
+		fmt.Println("[B]", space, nextName)
 		//logger.Println("\t", i, "next branch:", nextName)
 
 		// move down
