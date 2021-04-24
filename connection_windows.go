@@ -8,9 +8,11 @@ import (
 	"sync"
 	"time"
 
-	ole "github.com/go-ole/go-ole"
+	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 )
+
+var PrettyPrintFlag *bool
 
 func init() {
 	OleInit()
@@ -56,33 +58,39 @@ func (ao *AutomationObject) CreateBrowser(rootNode string) (*Tree, error) {
 
 	// create tree
 	root := Tree{"root", nil, []*Tree{}, []Leaf{}}
-	buildTree(browser.ToIDispatch(), &root)
+	buildTree(browser.ToIDispatch(), 0)
 
 	return &root, nil
 }
 
 //buildTree runs through the OPCBrowser and creates a tree with the OPC tags
-func buildTree(browser *ole.IDispatch, branch *Tree) {
+func buildTree(browser *ole.IDispatch, level int) {
 	var count int32
+	var space string
+	if *PrettyPrintFlag {
+		for i := 0; i < level; i++ {
+			space += "  "
+		}
+	}
 
-	logger.Println("Entering branch:", branch.Name)
+	//logger.Println("Entering branch:", branch.Name)
 
 	// loop through leafs
 	oleutil.MustCallMethod(browser, "ShowLeafs").ToIDispatch()
 	count = oleutil.MustGetProperty(browser, "Count").Value().(int32)
 
-	logger.Println("\tLeafs count:", count)
+	//logger.Println("\tLeafs count:", count)
 
 	for i := 1; i <= int(count); i++ {
 
 		item := oleutil.MustCallMethod(browser, "Item", i).Value()
 		tag := oleutil.MustCallMethod(browser, "GetItemID", item).Value()
 
-		l := Leaf{Name: item.(string), Tag: tag.(string)}
+		//l := Leaf{Name: item.(string), Tag: tag.(string)}
 
-		logger.Println("\t", i, l)
-
-		branch.Leaves = append(branch.Leaves, l)
+		//logger.Println("\t", i, l)
+		fmt.Println(space, tag)
+		//branch.Leaves = append(branch.Leaves, l)
 	}
 
 	// loop through branches
@@ -95,23 +103,22 @@ func buildTree(browser *ole.IDispatch, branch *Tree) {
 
 		nextName := oleutil.MustCallMethod(browser, "Item", i).Value()
 
-		logger.Println("\t", i, "next branch:", nextName)
+		//logger.Println("\t", i, "next branch:", nextName)
 
 		// move down
 		oleutil.MustCallMethod(browser, "MoveDown", nextName)
 
 		// recursively populate tree
-		nextBranch := Tree{nextName.(string), branch, []*Tree{}, []Leaf{}}
-		branch.Branches = append(branch.Branches, &nextBranch)
-		buildTree(browser, &nextBranch)
+		//nextBranch := Tree{nextName.(string), branch, []*Tree{}, []Leaf{}}
+		//branch.Branches = append(branch.Branches, &nextBranch)
+		buildTree(browser, level+1)
 
 		// move up and set branches again
 		oleutil.MustCallMethod(browser, "MoveUp")
 		oleutil.MustCallMethod(browser, "ShowBranches").ToIDispatch()
 	}
 
-	logger.Println("Exiting branch:", branch.Name)
-
+	//logger.Println("Exiting branch:", branch.Name)
 }
 
 //Connect establishes a connection to the OPC Server on node.
