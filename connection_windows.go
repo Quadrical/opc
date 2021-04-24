@@ -12,7 +12,10 @@ import (
 	"github.com/go-ole/go-ole/oleutil"
 )
 
-var PrettyPrintFlag *bool
+var (
+	PrettyPrintFlag *bool
+	MaxDepth        *int
+)
 
 func init() {
 	OleInit()
@@ -65,6 +68,9 @@ func (ao *AutomationObject) CreateBrowser(rootNode string) (*Tree, error) {
 
 //buildTree runs through the OPCBrowser and creates a tree with the OPC tags
 func buildTree(browser *ole.IDispatch, level int) {
+	if level > *MaxDepth {
+		return
+	}
 	var count int32
 	var space string
 	if *PrettyPrintFlag {
