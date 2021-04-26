@@ -5,6 +5,7 @@ package opc
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -56,7 +57,10 @@ func (ao *AutomationObject) CreateBrowser(rootNode string) (*Tree, error) {
 
 	// move to custom root
 	if rootNode != "" {
-		oleutil.MustCallMethod(browser.ToIDispatch(), "MoveTo", rootNode)
+		rootPath := strings.Split(rootNode, ",")
+		for _, node := range rootPath {
+			oleutil.MustCallMethod(browser.ToIDispatch(), "MoveDown", node)
+		}
 	}
 
 	// create tree
