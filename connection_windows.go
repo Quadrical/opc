@@ -58,9 +58,7 @@ func (ao *AutomationObject) CreateBrowser(rootNode string) (*Tree, error) {
 	// move to custom root
 	if rootNode != "" {
 		rootPath := strings.Split(rootNode, ",")
-		for _, node := range rootPath {
-			oleutil.MustCallMethod(browser.ToIDispatch(), "MoveDown", node)
-		}
+		oleutil.MustCallMethod(browser.ToIDispatch(), "MoveTo", rootPath)
 	}
 
 	// create tree
